@@ -254,6 +254,7 @@
         <div class="config-bar">
             <input type="text" id="pi-url" placeholder="Enter Pi IP (e.g., http://192.168.1.100:5001)">
             <button onclick="savePiUrl()">Save & Connect</button>
+            <button onclick="disconnectPi()" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">Disconnect</button>
         </div>
 
         <!-- Connection Status -->
@@ -364,6 +365,17 @@
             localStorage.setItem('rufus_pi_url', url);
             PI_URL = url;
             checkConnection();
+        }
+
+        // Disconnect from Pi
+        function disconnectPi() {
+            PI_URL = '';
+            localStorage.removeItem('rufus_pi_url');
+            document.getElementById('pi-url').value = '';
+
+            const statusDiv = document.getElementById('connection-status');
+            statusDiv.textContent = '⚫ Not connected to Pi';
+            statusDiv.className = 'connection-status disconnected';
         }
 
         // Check connection to Pi
