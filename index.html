@@ -330,8 +330,8 @@
         <div class="panel">
             <h2>🎤 Voice Conversation</h2>
             <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
-                <button id="record-btn" class="gesture-btn" style="padding: 20px 40px; font-size: 1.2em;" onclick="toggleRecording()">
-                    🎤 Record
+                <button id="record-btn" class="gesture-btn" style="padding: 20px 40px; font-size: 1.2em;" onclick="startVoiceChat()">
+                    🎤 Start Conversation
                 </button>
                 <div id="recording-status" style="font-weight: bold; color: #667eea;"></div>
                 <div id="voice-response" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; display: none; text-align: left; width: 100%;">
@@ -538,80 +538,17 @@
             }
         });
 
-        // Voice Recording
-        let mediaRecorder;
-        let audioChunks = [];
-        let isRecording = false;
-
-        async function toggleRecording() {
-            if (!isRecording) {
-                await startRecording();
-            } else {
-                await stopRecording();
-            }
-        }
-
-        async function startRecording() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
-
-                mediaRecorder.ondataavailable = (event) => {
-                    audioChunks.push(event.data);
-                };
-
-                mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    await sendAudioToPi(audioBlob);
-
-                    // Stop all tracks to release microphone
-                    stream.getTracks().forEach(track => track.stop());
-                };
-
-                mediaRecorder.start();
-                isRecording = true;
-
-                const btn = document.getElementById('record-btn');
-                btn.textContent = '⏹️ Stop';
-                btn.style.background = 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)';
-
-                document.getElementById('recording-status').textContent = '🔴 Recording... (5 seconds)';
-                document.getElementById('voice-response').style.display = 'none';
-
-                // Auto-stop after 5 seconds
-                setTimeout(async () => {
-                    if (isRecording) {
-                        await stopRecording();
-                    }
-                }, 5000);
-
-            } catch (error) {
-                alert('❌ Could not access microphone: ' + error.message);
-            }
-        }
-
-        async function stopRecording() {
-            if (mediaRecorder && isRecording) {
-                mediaRecorder.stop();
-                isRecording = false;
-
-                const btn = document.getElementById('record-btn');
-                btn.textContent = '🎤 Record';
-                btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-
-                document.getElementById('recording-status').textContent = '⏳ Processing...';
-            }
-        }
-
-        async function sendAudioToPi(audioBlob) {
-            const formData = new FormData();
-            formData.append('audio', audioBlob, 'audio.webm');
+        // Voice Conversation (Pi records using its own microphone)
+        async function startVoiceChat() {
+            const btn = document.getElementById('record-btn');
+            btn.disabled = true;
+            btn.textContent = '🎤 Recording...';
+            document.getElementById('recording-status').textContent = '🔴 Recording on Pi...';
+            document.getElementById('voice-response').style.display = 'none';
 
             try {
                 const response = await fetch(`${PI_URL}/api/voice-chat`, {
-                    method: 'POST',
-                    body: formData
+                    method: 'POST'
                 });
 
                 const result = await response.json();
@@ -623,9 +560,9 @@
                     document.getElementById('voice-response-text').textContent = result.response;
                     document.getElementById('recording-status').textContent = '✅ Done!';
 
-                    // Trigger gesture if detected
+                    // Trigger gesture if detected (already executed on Pi, but also show on web)
                     if (result.gesture && result.gesture !== 'rest') {
-                        await triggerGesture(result.gesture);
+                        console.log(`Gesture executed: ${result.gesture}`);
                     }
 
                     // Clear status after delay
@@ -637,6 +574,9 @@
                 }
             } catch (error) {
                 document.getElementById('recording-status').textContent = '❌ Error: ' + error.message;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🎤 Start Conversation';
             }
         }
     </script>
