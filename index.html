@@ -91,6 +91,27 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .send-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            white-space: nowrap;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .send-btn:active {
+            transform: scale(0.95);
         }
 
         input[type="range"] {
@@ -249,6 +270,7 @@
                 <div class="slider-container">
                     <input type="range" id="pan" min="0" max="180" value="90">
                     <span class="angle-display" id="pan-angle">90°</span>
+                    <button class="send-btn" onclick="sendServoAngle('pan')">Send</button>
                 </div>
             </div>
 
@@ -257,6 +279,7 @@
                 <div class="slider-container">
                     <input type="range" id="left_arm" min="50" max="180" value="90">
                     <span class="angle-display" id="left_arm-angle">90°</span>
+                    <button class="send-btn" onclick="sendServoAngle('left_arm')">Send</button>
                 </div>
             </div>
 
@@ -265,6 +288,7 @@
                 <div class="slider-container">
                     <input type="range" id="right_arm" min="50" max="180" value="90">
                     <span class="angle-display" id="right_arm-angle">90°</span>
+                    <button class="send-btn" onclick="sendServoAngle('right_arm')">Send</button>
                 </div>
             </div>
         </div>
@@ -276,10 +300,6 @@
                 <button class="gesture-btn" onclick="triggerGesture('wave')">👋 Wave</button>
                 <button class="gesture-btn" onclick="triggerGesture('nod')">✅ Nod (Yes)</button>
                 <button class="gesture-btn" onclick="triggerGesture('shake')">❌ Shake (No)</button>
-                <button class="gesture-btn" onclick="triggerGesture('happy')">😊 Happy</button>
-                <button class="gesture-btn" onclick="triggerGesture('sad')">😢 Sad</button>
-                <button class="gesture-btn" onclick="triggerGesture('excited')">🎉 Excited</button>
-                <button class="gesture-btn" onclick="triggerGesture('curious')">🤨 Curious</button>
                 <button class="gesture-btn" onclick="triggerGesture('rest')">😴 Rest</button>
             </div>
         </div>
@@ -373,23 +393,38 @@
             }
         }
 
-        // Update angle when slider moves
-        async function updateAngle(servo) {
+        // Update angle display when slider moves (no send)
+        function updateAngleDisplay(servo) {
             const slider = document.getElementById(servo);
             const display = document.getElementById(servo + '-angle');
             display.textContent = slider.value + '°';
-
-            // Send to Pi
-            await sendToPi('/api/servo', {
-                servo: servo,
-                angle: parseInt(slider.value)
-            });
         }
 
-        // Add event listeners to sliders
+        // Send servo angle when button clicked
+        async function sendServoAngle(servo) {
+            const slider = document.getElementById(servo);
+            const angle = parseInt(slider.value);
+
+            const success = await sendToPi('/api/servo', {
+                servo: servo,
+                angle: angle
+            });
+
+            if (success) {
+                // Brief visual feedback
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✓';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 500);
+            }
+        }
+
+        // Add event listeners to sliders (only update display)
         document.querySelectorAll('input[type="range"]').forEach(slider => {
             slider.addEventListener('input', function() {
-                updateAngle(this.id);
+                updateAngleDisplay(this.id);
             });
         });
 
