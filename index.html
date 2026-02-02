@@ -293,6 +293,18 @@
             </div>
             <div id="speak-status" class="status" style="display: none;"></div>
         </div>
+
+        <!-- Ask AI Panel -->
+        <div class="panel">
+            <h2>🤖 Ask Rufus AI</h2>
+            <div class="speak-panel">
+                <input type="text" id="question-text" placeholder="Ask Rufus a question...">
+                <button onclick="askQuestion()">Ask</button>
+            </div>
+            <div id="question-response" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; display: none;">
+                <strong>Rufus:</strong> <span id="response-text"></span>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -410,6 +422,50 @@
             }
         }
 
+        // Ask AI question
+        async function askQuestion() {
+            const question = document.getElementById('question-text').value;
+
+            if (!question) {
+                alert('❌ Please enter a question');
+                return;
+            }
+
+            const responseDiv = document.getElementById('question-response');
+            const responseText = document.getElementById('response-text');
+
+            responseDiv.style.display = 'block';
+            responseText.textContent = '🤔 Thinking...';
+
+            try {
+                const response = await fetch(`${PI_URL}/api/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: question })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    responseText.textContent = result.response;
+
+                    // Trigger gesture if detected
+                    if (result.gesture && result.gesture !== 'neutral') {
+                        await triggerGesture(result.gesture);
+                    }
+
+                    // Clear input
+                    document.getElementById('question-text').value = '';
+                } else {
+                    responseText.textContent = '❌ Failed to get response';
+                }
+            } catch (error) {
+                responseText.textContent = '❌ Error: ' + error.message;
+            }
+        }
+
         // Show status message
         function showStatus(elementId, message, type) {
             const statusDiv = document.getElementById(elementId);
@@ -422,6 +478,13 @@
         document.getElementById('speak-text').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 speak();
+            }
+        });
+
+        // Allow Enter key to trigger question
+        document.getElementById('question-text').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                askQuestion();
             }
         });
     </script>
