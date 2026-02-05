@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rufus Robot Controller</title>
+    <title>ARIS Robot Controller</title>
     <style>
         * {
             margin: 0;
@@ -11,12 +11,51 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-dark: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            --panel-bg: rgba(255, 255, 255, 0.95);
+            --panel-dark: rgba(30, 30, 50, 0.95);
+            --text-color: #333;
+            --text-dark: #e0e0e0;
+            --accent: #667eea;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--bg-gradient);
             min-height: 100vh;
             padding: 20px;
-            color: #333;
+            color: var(--text-color);
+            transition: background 0.3s ease;
+        }
+
+        body.dark-mode {
+            background: var(--bg-dark);
+        }
+
+        .dark-mode .panel {
+            background: var(--panel-dark);
+            color: var(--text-dark);
+        }
+
+        .dark-mode h1 {
+            color: #e0e0e0;
+        }
+
+        .dark-mode h2 {
+            color: #667eea;
+        }
+
+        .dark-mode label {
+            color: #e0e0e0;
+        }
+
+        .dark-mode .speak-panel input,
+        .dark-mode .config-bar input {
+            background: #2a2a4a;
+            color: #e0e0e0;
+            border-color: #444;
         }
 
         .container {
@@ -244,11 +283,262 @@
             background: #f8d7da;
             color: #721c24;
         }
+
+        /* Dark Mode Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #667eea;
+            border-radius: 50px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Connection Quality */
+        .connection-quality {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .quality-indicator {
+            display: flex;
+            gap: 3px;
+        }
+
+        .quality-bar {
+            width: 4px;
+            background: #ddd;
+            border-radius: 2px;
+            transition: background 0.3s;
+        }
+
+        .quality-bar.active {
+            background: #28a745;
+        }
+
+        .quality-bar.medium {
+            background: #ffc107;
+        }
+
+        .quality-bar.poor {
+            background: #dc3545;
+        }
+
+        /* Conversation Bubbles */
+        .conversation-history {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .dark-mode .conversation-history {
+            background: #2a2a4a;
+        }
+
+        .message {
+            margin-bottom: 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+        }
+
+        .message.assistant {
+            background: #e9ecef;
+            color: #333;
+            margin-right: auto;
+        }
+
+        .dark-mode .message.assistant {
+            background: #3a3a5a;
+            color: #e0e0e0;
+        }
+
+        .message .emoji {
+            font-size: 24px;
+            margin-right: 8px;
+        }
+
+        .message .meta {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 4px;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Sound Visualizer */
+        .sound-visualizer {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            margin: 15px 0;
+        }
+
+        .visualizer-bar {
+            width: 6px;
+            background: #667eea;
+            border-radius: 3px;
+            transition: height 0.1s ease;
+        }
+
+        .visualizer-bar.active {
+            animation: soundWave 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes soundWave {
+            from { height: 10px; }
+            to { height: 50px; }
+        }
+
+        /* Gesture Preview */
+        .gesture-preview {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .dark-mode .gesture-preview {
+            background: #2a2a4a;
+        }
+
+        .gesture-preview .icon {
+            font-size: 32px;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        /* Real-time Transcript */
+        .realtime-transcript {
+            padding: 12px;
+            background: #e7f3ff;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-style: italic;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .dark-mode .realtime-transcript {
+            background: #1a1a3a;
+            border-left-color: #667eea;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Status Bar */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+
+        .dark-mode .status-bar {
+            background: rgba(30, 30, 50, 0.9);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5568d3;
+        }
     </style>
 </head>
 <body>
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+
     <div class="container">
-        <h1>🤖 Rufus Robot Controller</h1>
+        <h1>🤖 ARIS Robot Controller</h1>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-item">
+                <span>📶</span>
+                <div class="quality-indicator">
+                    <div class="quality-bar" id="q1"></div>
+                    <div class="quality-bar" id="q2"></div>
+                    <div class="quality-bar" id="q3"></div>
+                    <div class="quality-bar" id="q4"></div>
+                    <div class="quality-bar" id="q5"></div>
+                </div>
+                <span id="ping-display">-- ms</span>
+            </div>
+            <div class="status-item">
+                <span id="mode-display">💬 Ready</span>
+            </div>
+        </div>
 
         <!-- Pi URL Configuration -->
         <div class="config-bar">
@@ -317,13 +607,25 @@
 
         <!-- Ask AI Panel -->
         <div class="panel">
-            <h2>🤖 Ask Rufus AI</h2>
+            <h2>🤖 Ask ARIS AI</h2>
             <div class="speak-panel">
-                <input type="text" id="question-text" placeholder="Ask Rufus a question...">
-                <button onclick="askQuestion()">Ask</button>
+                <input type="text" id="question-text" placeholder="Ask ARIS a question...">
+                <button onclick="askQuestion()">
+                    <span id="ask-spinner" class="spinner" style="display: none;"></span>
+                    <span id="ask-btn-text">Ask</span>
+                </button>
             </div>
-            <div id="question-response" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; display: none;">
-                <strong>Rufus:</strong> <span id="response-text"></span>
+
+            <!-- Conversation History -->
+            <div class="conversation-history" id="conversation-history">
+                <div style="text-align: center; color: #888; font-style: italic;">
+                    Conversation will appear here...
+                </div>
+            </div>
+
+            <!-- Real-time Transcript -->
+            <div id="realtime-transcript" class="realtime-transcript" style="display: none;">
+                🎤 ARIS is thinking...
             </div>
         </div>
 
@@ -334,10 +636,24 @@
                 <button id="record-btn" class="gesture-btn" style="padding: 20px 40px; font-size: 1.2em;" onclick="startVoiceChat()">
                     🎤 Start Conversation
                 </button>
+
+                <!-- Sound Visualizer -->
+                <div class="sound-visualizer" id="sound-visualizer" style="display: none;">
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                </div>
+
                 <div id="recording-status" style="font-weight: bold; color: #667eea;"></div>
                 <div id="voice-response" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; display: none; text-align: left; width: 100%;">
                     <strong>You said:</strong> <p id="transcript-text" style="margin: 5px 0;"></p>
-                    <strong>Rufus:</strong> <p id="voice-response-text" style="margin: 5px 0;"></p>
+                    <strong>ARIS:</strong> <p id="voice-response-text" style="margin: 5px 0;"></p>
                 </div>
             </div>
         </div>
@@ -378,21 +694,142 @@
             statusDiv.className = 'connection-status disconnected';
         }
 
-        // Check connection to Pi
+        // Check connection to Pi with ping measurement
         async function checkConnection() {
             const statusDiv = document.getElementById('connection-status');
+            const startTime = Date.now();
 
             try {
                 const response = await fetch(`${PI_URL}/health`);
+                const endTime = Date.now();
+                const ping = endTime - startTime;
+
                 if (response.ok) {
                     statusDiv.textContent = '✅ Connected to Pi';
                     statusDiv.className = 'connection-status connected';
+
+                    // Update ping display
+                    updateConnectionQuality(ping);
                 } else {
                     throw new Error('Connection failed');
                 }
             } catch (error) {
                 statusDiv.textContent = '❌ Cannot connect to Pi';
                 statusDiv.className = 'connection-status disconnected';
+                updateConnectionQuality(9999);
+            }
+        }
+
+        // Update connection quality indicator
+        function updateConnectionQuality(ping) {
+            const pingDisplay = document.getElementById('ping-display');
+            pingDisplay.textContent = ping + ' ms';
+
+            // Update quality bars
+            for (let i = 1; i <= 5; i++) {
+                const bar = document.getElementById('q' + i);
+                bar.className = 'quality-bar'; // Reset
+            }
+
+            if (ping < 100) {
+                // Excellent - all 5 bars green
+                for (let i = 1; i <= 5; i++) {
+                    document.getElementById('q' + i).classList.add('active');
+                }
+            } else if (ping < 200) {
+                // Good - 4 bars green
+                for (let i = 1; i <= 4; i++) {
+                    document.getElementById('q' + i).classList.add('active');
+                }
+            } else if (ping < 500) {
+                // Medium - 3 bars yellow
+                for (let i = 1; i <= 3; i++) {
+                    document.getElementById('q' + i).classList.add('medium');
+                }
+            } else {
+                // Poor - 2 bars red
+                for (let i = 1; i <= 2; i++) {
+                    document.getElementById('q' + i).classList.add('poor');
+                }
+            }
+        }
+
+        // Toggle dark mode
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.querySelector('.theme-toggle');
+
+            body.classList.toggle('dark-mode');
+
+            if (body.classList.contains('dark-mode')) {
+                btn.textContent = '☀️ Light Mode';
+                localStorage.setItem('aris_theme', 'dark');
+            } else {
+                btn.textContent = '🌙 Dark Mode';
+                localStorage.setItem('aris_theme', 'light');
+            }
+        }
+
+        // Load saved theme on page load
+        const savedTheme = localStorage.getItem('aris_theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.querySelector('.theme-toggle').textContent = '☀️ Light Mode';
+        }
+
+        // Add message to conversation history
+        function addMessage(type, text, emoji = '') {
+            const historyDiv = document.getElementById('conversation-history');
+
+            // Clear placeholder text
+            if (historyDiv.querySelector('div')?.textContent.includes('Conversation will appear')) {
+                historyDiv.innerHTML = '';
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            messageDiv.innerHTML = `
+                ${emoji ? `<span class="emoji">${emoji}</span>` : ''}
+                <span class="text">${text}</span>
+                <div class="meta">${time}</div>
+            `;
+
+            historyDiv.appendChild(messageDiv);
+            historyDiv.scrollTop = historyDiv.scrollHeight;
+        }
+
+        // Update mode display
+        function updateMode(mode, emoji) {
+            document.getElementById('mode-display').textContent = `${emoji} ${mode}`;
+        }
+
+        // Show real-time transcript
+        function showRealtimeTranscript(text) {
+            const transcriptDiv = document.getElementById('realtime-transcript');
+            transcriptDiv.textContent = `🎤 "${text}"`;
+            transcriptDiv.style.display = 'block';
+        }
+
+        // Hide real-time transcript
+        function hideRealtimeTranscript() {
+            document.getElementById('realtime-transcript').style.display = 'none';
+        }
+
+        // Toggle sound visualizer
+        function toggleSoundVisualizer(show) {
+            const visualizer = document.getElementById('sound-visualizer');
+            visualizer.style.display = show ? 'flex' : 'none';
+
+            if (show) {
+                const bars = visualizer.querySelectorAll('.visualizer-bar');
+                bars.forEach((bar, index) => {
+                    setTimeout(() => {
+                        bar.classList.add('active');
+                    }, index * 100);
+                });
             }
         }
 
@@ -493,11 +930,14 @@
                 return;
             }
 
-            const responseDiv = document.getElementById('question-response');
-            const responseText = document.getElementById('response-text');
+            // Show spinner, update mode
+            document.getElementById('ask-spinner').style.display = 'inline-block';
+            document.getElementById('ask-btn-text').textContent = 'Asking...';
+            updateMode('AI Thinking', '🧠');
+            showRealtimeTranscript(question);
 
-            responseDiv.style.display = 'block';
-            responseText.textContent = '🤔 Thinking...';
+            // Add user message to conversation
+            addMessage('user', question);
 
             try {
                 const response = await fetch(`${PI_URL}/api/chat`, {
@@ -511,20 +951,41 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    responseText.textContent = result.response;
+                    // Hide spinner
+                    document.getElementById('ask-spinner').style.display = 'none';
+                    document.getElementById('ask-btn-text').textContent = 'Ask';
+                    hideRealtimeTranscript();
+
+                    // Determine emoji based on gesture
+                    let emoji = '';
+                    if (result.gesture === 'nod') emoji = '😊';
+                    else if (result.gesture === 'shake') emoji = '🤔';
+                    else emoji = '😐';
+
+                    // Add AI response to conversation
+                    addMessage('assistant', result.response, emoji);
 
                     // Trigger gesture if detected
-                    if (result.gesture && result.gesture !== 'neutral') {
+                    if (result.gesture && result.gesture !== 'rest') {
                         await triggerGesture(result.gesture);
                     }
+
+                    // Update mode
+                    updateMode('Ready', '💬');
 
                     // Clear input
                     document.getElementById('question-text').value = '';
                 } else {
-                    responseText.textContent = '❌ Failed to get response';
+                    document.getElementById('ask-spinner').style.display = 'none';
+                    document.getElementById('ask-btn-text').textContent = 'Ask';
+                    hideRealtimeTranscript();
+                    addMessage('assistant', '❌ Failed to get response', '⚠️');
                 }
             } catch (error) {
-                responseText.textContent = '❌ Error: ' + error.message;
+                document.getElementById('ask-spinner').style.display = 'none';
+                document.getElementById('ask-btn-text').textContent = 'Ask';
+                hideRealtimeTranscript();
+                addMessage('assistant', '❌ Error: ' + error.message, '⚠️');
             }
         }
 
@@ -558,6 +1019,10 @@
             document.getElementById('recording-status').textContent = '🔴 Recording on Pi...';
             document.getElementById('voice-response').style.display = 'none';
 
+            // Show sound visualizer
+            toggleSoundVisualizer(true);
+            updateMode('Listening...', '🎤');
+
             try {
                 const response = await fetch(`${PI_URL}/api/voice-chat`, {
                     method: 'POST'
@@ -566,26 +1031,43 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    // Show response
+                    // Hide visualizer
+                    toggleSoundVisualizer(false);
+
+                    // Add to conversation history
+                    addMessage('user', result.transcript);
+
+                    // Determine emoji based on gesture
+                    let emoji = '';
+                    if (result.gesture === 'nod') emoji = '😊';
+                    else if (result.gesture === 'shake') emoji = '🤔';
+                    else emoji = '😐';
+
+                    addMessage('assistant', result.response, emoji);
+
+                    // Show response in old format too
                     document.getElementById('voice-response').style.display = 'block';
                     document.getElementById('transcript-text').textContent = result.transcript;
                     document.getElementById('voice-response-text').textContent = result.response;
                     document.getElementById('recording-status').textContent = '✅ Done!';
 
-                    // Trigger gesture if detected (already executed on Pi, but also show on web)
-                    if (result.gesture && result.gesture !== 'rest') {
-                        console.log(`Gesture executed: ${result.gesture}`);
-                    }
+                    // Update mode
+                    updateMode('Ready', '💬');
 
                     // Clear status after delay
                     setTimeout(() => {
                         document.getElementById('recording-status').textContent = '';
-                    }, 3000);
+                        document.getElementById('voice-response').style.display = 'none';
+                    }, 5000);
                 } else {
+                    toggleSoundVisualizer(false);
                     document.getElementById('recording-status').textContent = '❌ Failed: ' + (result.error || 'Unknown error');
+                    updateMode('Error', '⚠️');
                 }
             } catch (error) {
+                toggleSoundVisualizer(false);
                 document.getElementById('recording-status').textContent = '❌ Error: ' + error.message;
+                updateMode('Error', '⚠️');
             } finally {
                 btn.disabled = false;
                 btn.textContent = '🎤 Start Conversation';
